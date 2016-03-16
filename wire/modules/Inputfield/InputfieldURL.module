@@ -1,0 +1,47 @@
+<?php
+
+/**
+ * An Inputfield for handling input of URLs
+ *
+ */
+class InputfieldURL extends InputfieldText {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'URL',
+			'version' => 100,
+			'summary' => 'URL in valid format',
+			);
+	}
+
+	public function __construct() {
+		parent::__construct();
+		$this->setAttribute('type', 'text'); 
+		$this->setAttribute('maxlength', 255); 
+		$this->setAttribute('size', 70); 
+		$this->setAttribute('name', 'href'); 
+		$this->label = 'URL';
+		$this->set('noRelative', 0); // whether relative URLs are disabled
+		$this->description = "Enter a valid URL, i.e. http://www.company.com/dir/";
+	}
+
+	public function setAttribute($key, $value) {
+
+		if($key == 'value') {
+			if(strlen($value)) {
+				$value = trim($value); 
+				$unsanitized = $value; 
+				$value = $this->fuel('sanitizer')->url($value, $this->noRelative ? false : true); 	
+
+				if(!$value || $unsanitized != $value && "http://$unsanitized" != $value) {
+					$this->error("Error found in field '{$this->name}' - please check that it is a valid URL"); 
+
+				} else if($value != $unsanitized && $value == "http://$unsanitized") {
+					$this->message("Note that 'http://' was added to field '{$this->name}'"); 
+				}
+
+			} else $value = '';
+		}
+		return parent::setAttribute($key, $value); 
+	}
+}

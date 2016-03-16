@@ -1,0 +1,281 @@
+<?php
+
+/**
+ * ProcessWire Page Permissions Module
+ *
+ * Adds convenience methods to all Page objects for checking permissions, i.e. 
+ * 
+ * if($page->editable()) { do something }
+ * if(!$page->viewable()) { echo "sorry you can't view this"; }
+ * ...and so on...
+ * 
+ * ProcessWire 2.x 
+ * Copyright (C) 2010 by Ryan Cramer 
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ * 
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ */
+
+class PagePermissions extends WireData implements Module {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Page Permissions', 
+			'version' => 101, 
+			'summary' => 'Adds various permission methods to Page objects that are used by Process modules.',
+			'permanent' => true, 
+			'singular' => true,
+			'autoload' => true, 
+			);
+	}
+
+	public function init() {
+		$this->addHook('Page::editable', $this, 'editable'); 
+		$this->addHook('Page::viewable', $this, 'viewable'); 
+		$this->addHook('Page::listable', $this, 'listable'); 
+		$this->addHook('Page::deleteable', $this, 'deleteable'); 
+		$this->addHook('Page::addable', $this, 'addable'); 
+		$this->addHook('Page::moveable', $this, 'moveable'); 
+		$this->addHook('Page::sortable', $this, 'sortable'); 
+	}
+
+	/**
+	 * Is the page editable by the current user?
+	 *
+	 * A field name may optionally be specified as the first argument, in which case the field on that page will also be checked for access. 
+	 *
+	 */
+	public function editable($event) {
+
+		$page = $event->object; 
+
+		if(!$this->pageEditable($page)) {
+			$event->return = false;
+
+		} else if(isset($event->arguments[0])) {
+			$event->return = $this->fieldEditable($page, $event->arguments[0]); 
+
+		} else {
+			$event->return = true; 
+		}
+
+	}
+
+	/**
+	 * Is the given page editable?
+	 *
+	 */
+	protected function pageEditable(Page $page) {
+
+		$user = $this->fuel('user');
+
+		// superuser can always do whatever they want
+		if($user->isSuperuser()) return true; 
+
+		// note there is an exception in the case of system pages, which require superuser to edit
+		if($page->status & Page::statusSystem) return false; 
+
+		// special conditions apply if the page is a User
+		if($page instanceof User) {
+
+			// if the user page being edited has a superuser role, and the current user doesn't, never let them edit regardless of any other permissions
+			if($page->hasRole('superuser') && !$user->hasRole('superuser')) return false; 
+
+			if($user->hasPermission('user-admin')) return true; 
+
+		} else if($page instanceof Role) {
+		
+			if($user->hasPermission('role-admin')) return true; 
+			return false; 
+
+		} else if($page instanceof Permission) {
+
+			if($user->hasPermission('permission-admin')) return true; 
+			return false; 
+		}
+
+		// if the user doesn't have page-edit permission, don't let them go further
+		if(!$user->hasPermission("page-edit", $page)) return false;
+
+		return true; 
+	}
+
+	/**
+	 * Assuming the page is editable, is the given field name also editable?
+	 *
+	 */
+	protected function fieldEditable(Page $page, $name) {
+	
+		if(!is_string($name)) return false; 
+		if(!strlen($name)) return true; 
+
+		if($name == 'id' && ($page->status & Page::statusSystemID)) return false; 
+
+		$user = $this->fuel('user'); 
+
+		if($page->status & Page::statusSystem) {
+			if(in_array($name, array('id', 'name', 'template', 'templates_id', 'parent', 'parent_id'))) {
+				return false;
+			}
+		}
+
+		if($name == 'template' || $name == 'templates_id') {
+			if($this->page->template->noChangeTemplate) return false;
+			if(!$user->hasPermission('page-template', $page)) return false; 
+		}
+
+		if($name == 'parent' || $name == 'parent_id') {
+			if($this->page->template->noMove) return false; 
+			if(!$user->hasPermission('page-move', $page)) return false; 
+		}
+
+		if($name == 'sortfield') {
+			if(!$user->hasPermission('page-sort', $page)) return false; 
+		}
+
+		if($name == 'roles') {
+			if(!$user->hasPermission('user-admin')) return false; 
+		}
+
+		// FUTURE: check per-field edit access
+
+		return true; 
+	}
+
+	/**
+	 * Is the page viewable by the current user?
+	 *
+	 */
+	public function viewable($event) {
+
+		$page = $event->object; 
+		$viewable = true; 
+		$user = $this->fuel('user'); 
+
+		if($page->status >= Page::statusUnpublished) $viewable = false;
+			else if(!$page->template->filenameExists()) $viewable = false; 
+			else if($user->isSuperuser()) $viewable = true; 
+			else if($page->process) $viewable = $this->processViewable($page->process);
+			else if(!$user->hasPermission("page-view", $page)) $viewable = false;
+			else if($page->isTrash()) $viewable = false; 
+
+		// if the page is editable by the current user, force it to be viewable
+		if(!$viewable && !$user->isGuest() && $page->is(Page::statusUnpublished)) {
+			if($page->editable() && $page->template->filenameExists()) $viewable = true; 
+		}
+
+		$event->return = $viewable; 
+	}
+
+	/**
+	 * Does the user have explicit permission to access the given process?
+	 *
+	 * Access to the process takes over 'page-view' access to the page so that the administrator
+	 * doesn't need to setup a separate role just for 'view' access in the admin. Instead, they just
+ 	 * give the existing roles access to the admin process and then 'view' access is assumed for that page.
+	 *
+	 */
+	protected function processViewable($process) {
+
+		$user = $this->fuel('user');
+
+		if($user->isGuest()) return false;
+		if($user->isSuperuser()) return true; 
+
+		$info = $this->fuel('modules')->getModuleInfo($process); 
+		$permissionName = empty($info['permission']) ? '' : $info['permission'];
+
+		// if the process module doesn't explicitely define a permission, 
+		// then we assume the user doesn't have access
+		if(!$permissionName) return false;
+
+		return $user->hasPermission($permissionName); 
+	}
+
+	/**
+	 * Is the page listable by the current user?
+	 *
+	 */
+	public function listable($event) {
+		$page = $event->object; 
+		if($page->template->guestSearchable) $event->return = true; 
+			else $event->return = $this->user->hasPermission("page-view", $page);
+	}
+
+	/**
+	 * Is the page deleteable by the current user?
+	 *
+	 */
+	public function deleteable($event) {
+		$page = $event->object;
+		$deleteable = $this->pages->isDeleteable($page); 
+		if($deleteable) $deleteable = $this->user->hasPermission("page-delete", $page);
+		if($deleteable && $page instanceof User) {
+			if($page->id == $this->user->id) $deleteable = false; 
+				else if($page->hasRole('superuser') && !$this->user->hasRole('superuser')) $deleteable = false; 
+		}
+		$event->return = $deleteable;
+	}
+
+	/**
+	 * Can the current user add child pages to this page?
+	 *
+	 */
+	public function addable($event) {
+
+		$page = $event->object; 
+		$user = $this->fuel('user'); 
+		$addable = false; 
+
+		if($page->template->childrenTemplatesID < 0) {
+			$addable = false; 
+
+		} else if($user->isSuperuser()) {
+			$addable = true; 
+
+		} else {
+			foreach($page->template->addRoles as $roleID) {
+				if($user->hasRole($roleID)) {
+					$role = $this->fuel('roles')->get($roleID); 
+					if($role->id && $role->hasPermission('page-edit')) {
+						$addable = true;
+						break;
+					}
+				}
+			}
+		}
+
+		$event->return = $addable;
+	}
+
+	/**
+	 * Is the given page moveable (i.e. change parent)?
+	 *
+	 * Without arguments, it just checks that the user is allowed to move the page (not where they are allowed to)
+	 * Optionally specify a $parent page as the first argument to check if they are allowed to move to that parent.
+	 *
+	 */
+	public function moveable($event) {
+		$moveable = $this->fieldEditable($event->object, 'parent'); 
+		if($moveable && count($event->arguments) && $event->arguments[0] instanceof Page) {
+			$parent = $event->arguments[0];
+			$moveable = $parent->addable();
+		}
+		$event->return = $moveable;
+	}
+
+	/**
+	 * Is the given page sortable by the current user?
+	 *
+	 */
+	public function sortable($event) {
+		$page = $event->object; 
+		$sortable = false; 
+		if($this->user->hasPermission('page-sort', $page->parent)) $sortable = true; 
+		$event->return = $sortable;
+	}
+
+
+}
