@@ -1,0 +1,35 @@
+{{ define "main" }}
+    <main class="posts">
+        <h1>{{ .Title }}</h1>
+
+        {{- if .Content }}
+            <div class="content">{{ .Content }}</div>
+        {{- end }}
+
+        {{ $.Scratch.Set "curLetter" "MEEP" }}
+
+
+        {{- range .Pages.ByTitle }}
+          {{ $letter := substr .Title 0 1 | upper }}
+          {{ $curLetter := $.Scratch.Get "curLetter" }}
+          {{ if ne $letter $curLetter }}
+            {{ if ne $curLetter "MEEP"}}
+              </ul>
+            </div>
+            {{- end}}
+            <div class="posts-group">
+
+                <div class="post-year">{{ $letter }}</div>
+                <ul class="posts-list">
+          {{- end }}
+                <li class="post-item">
+                    <a href="{{.Permalink}}">
+                        <span class="post-title">{{.Title}}</span>
+                        <span class="post-day">{{ if .Site.Params.dateformShort }}{{ .Date.Format .Site.Params.dateformShort }}{{ else }}{{ .Date.Format "Jan 2"}}{{ end }}</span>
+                    </a>
+                </li>
+          {{ $.Scratch.Set "curLetter" $letter }}
+
+        {{- end }}
+    </main>
+{{ end }}

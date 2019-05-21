@@ -1,0 +1,3 @@
+{{ range . -}}
+    <a href="{{ .link }}" class="social-link" target="_blank" rel="noopener" title="{{ .icon | humanize }}">{{ partial "svg.html" . }}</a> &nbsp;
+{{- end -}}

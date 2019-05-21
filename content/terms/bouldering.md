@@ -1,0 +1,12 @@
+---
+title: Bouldering
+author: glennji
+type: term
+date: 2004-07-26T15:28:31+00:00
+crosslink: "true"
+---
+<div class="post">
+  <div class="post-body">
+    It&#8217;s another grey and rainy monandaeg in Melbourne, Australia, which is perfect weather for <a href="https://web.archive.org/web/20050126062618/http://robothead.blogspot.com/2004/07/another-drizzly-day.html">writing in a blog or two</a>. Unfortunately I had a big night on Saturday and I&#8217;m only just recovering (should&#8217;ve had an earlier night than I did last night, it seems).<br /> Whenever I catch up with my friends these days, it is with the realisation that I&#8217;ve only got a limited amount of time before I leave the country. Now, I don&#8217;t mean that I feel sad that I won&#8217;t be able to hang around with my friends &#8211; quite a number of them are travelling themeselves, or preparing to &#8211; but rather it&#8217;s only when relaxing that I realise just how much there is to get done before the big day.<br /> Our family is spread out across Australia: to visit them, we need to visit almost all of the capital cities in each state. And we will need to visit them before we go! For longer than just a cup of coffee and a biscuit! Then there are the things that I want to do, the experiences that I want to have that are either distinctly Australian, or most suited to be done here (skydiving, scuba diving, rally driving, camping out in the bush, surfing and snowboarding &#8230; to name a few!). Am I going to have the time (and financial backing) to be able to get to all these things?<br /> I figure that once we get &#8220;on the road&#8221; there is going to be so many other things to see and do, and we might forget or miss out on things. I mean, of course we will!! We should be paying attention to what we&#8217;re doing, not wondering where to go for a surf or a helicopter ride!<br /> Anyway, it just means that I&#8217;m planning all these things, figuring out how to fit them in and afford them, and which I really want to do. Which is in itself actually kind of fun!
+  </div>
+</div>

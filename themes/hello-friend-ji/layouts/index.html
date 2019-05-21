@@ -1,0 +1,21 @@
+{{ define "main" }}
+
+      <!-- <div id="home-typing" style="border: 1px solid red;">
+        <h2 id="mynameis">My name is glennji</h2>
+        <h2>and I'm a<div class="typed-element"></div></h2>
+      </div> -->
+
+      <div id="home-center">
+
+          <h1 id="home-title">{{ .Site.Title }}</h1>
+
+          {{- with .Site.Params.homeSubtitle }}
+              <p id="home-subtitle">{.}}</p>
+          {{- end }}
+
+          <div id="wrapper">
+            <div id="bg" class="no-scroll"></div>
+
+          </div>
+      </div>
+{{ end }}

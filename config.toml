@@ -1,0 +1,71 @@
+baseURL = "https://glennji.com"
+languageCode = "en-us"
+title = "Glenn J. Mason"
+homeSubtitle = "Futurist, father, scientist, skeptic, biohacker & devops lead"
+theme = "hello-friend-ji"
+
+[permalinks]
+  posts = "/:year/:month/:day/:title/"
+  attachments = "@attachment/:filename"
+  terms = "lexicon/:title/"
+  projects = "projects/:title"
+
+[author]
+  name = "Glenn J. Mason"
+  email = "glenn@glennji.com"
+
+[menu]
+  [[menu.main]]
+    identifier = "about"
+    name       = "about/"
+    url        = "about/"
+  [[menu.main]]
+    identifier = "posts"
+    name       = "blog/"
+    url        = "posts/"
+  [[menu.main]]
+    identifier = "notes"
+    name       = "notes/"
+    url        = "notes/start-here/"
+  [[menu.main]]
+    identifier = "projects"
+    name       = "projects/"
+    url        = "projects/"
+
+[params]
+  homeSubtitle = "Futurist, father, skeptic, biohacker & entrepreneur"
+  copyright = "Untitled"
+  #Disable the scrolling background by entering any string for bg_scroll. Enable by leaving bg_scroll empty.
+  bg_scroll = "nope"
+  favicon = "favicon.ico"
+
+  [params.logo]
+    logoText = "glennji"
+    logoHomeLink = "/"
+
+  [[params.social]]
+    medium = "Twitter"
+    icon = "twitter"
+    link = "https://twitter.com/glennji"
+  [[params.social]]
+    medium = "Facebook"
+    icon = "facebook"
+    link = "https://www.facebook.com/glennji"
+  [[params.social]]
+    medium = "Github"
+    icon = "github"
+    link = "https://github.com/glennji"
+  [[params.social]]
+    medium = "Email"
+    icon = "email"
+    link = "mailto:glenn@glennji.com"
+
+[related]
+    threshold = 80
+    includeNewer = true
+    toLower = true
+
+  [[related.indices]]
+    name  = "crosslink"
+    weight = 100
+    includeNewer = true
