@@ -17,6 +17,8 @@ fields:
 - type: text
   name: crosslink
   label: crosslink
+  hidden: false
+  default: '"true"'
 - type: list
   name: categories
   label: categories
