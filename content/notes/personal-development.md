@@ -7,3 +7,4 @@ title = "Personal Development"
 type = "note"
 
 +++
+_describe personal development here_
