@@ -1,0 +1,22 @@
+---
+label: Terms
+hide_body: false
+fields:
+- type: text
+  name: title
+  label: title
+- type: text
+  name: author
+  label: author
+- type: datetime
+  name: date
+  label: date
+- type: text
+  name: type
+  label: type
+- type: text
+  name: crosslink
+  label: crosslink
+- type: list
+  name: categories
+  label: categories
